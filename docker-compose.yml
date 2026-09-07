@@ -1,20 +1,71 @@
+# docker-compose.yml
+# This file defines the local development environment for the project.
+# It starts multiple containers together: the MySQL database and the Go API app.
+# Docker Compose makes it easier to run the full stack with one command.
+
+
+
 services:
+  # MySQL database service used by the app for local development
   db:
-    image: mysql:8.0
-    container_name: myproject_mysql
-    restart: unless-stopped
+    image: mysql:8.0                    # Docker image for MySQL 8
+    container_name: myproject_mysql      # Fixed container name for easier management
+    restart: unless-stopped              # Restart automatically if the container stops unexpectedly
+
     environment:
+      # Name of the default database created when the container starts
       MYSQL_DATABASE: "${DBName}"
+      # Allows the root user to have an empty password for local development only
       MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
+
     ports:
+      # Expose MySQL on the host machine so tools like MySQL client or TablePlus can connect
       - "3306:3306"
+
     healthcheck:
+      # Check whether MySQL is ready before the app starts depending on it
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
       interval: 10s
       timeout: 5s
       retries: 5
+
     volumes:
+      # Use a Docker volume so database data persists between container restarts
       - db_data:/var/lib/mysql
 
+  # Go API service for the application itself
+  api:
+    build:
+      # Build from the current project directory
+      context: .
+      # Use the Dockerfile in the project root
+      dockerfile: Dockerfile
+
+    container_name: myproject_api
+    restart: unless-stopped
+
+    ports:
+      # Map localhost:8080 on the host to port 8080 inside the container
+      - "8080:8080"
+
+    environment:
+      # Signal to the app that it's running inside Docker so it skips loading .env file
+      DOCKER: "true"
+      # Database config passed to the Go app at runtime
+      DBUser: "${DBUser}"
+      DBPassword: "${DBPassword}"
+      # Use the internal Docker service name 'db' instead of localhost because the app runs in a container
+      DBHost: "db"
+      DBPort: "3306"
+      DBName: "${DBName}"
+      JWT_EXP: "${JWT_EXP}"
+      JWT_SECRET: "${JWT_SECRET}"
+
+    depends_on:
+      # Wait until MySQL is healthy before starting the app
+      db:
+        condition: service_healthy
+
 volumes:
+  # Named Docker volume used to persist MySQL data
   db_data:

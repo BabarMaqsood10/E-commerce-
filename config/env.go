@@ -30,7 +30,10 @@ var Envs = initConfig()
 // database connection credentials
 func initConfig() Config {
 	// Load environment variables from .env file (if it exists) and handle any errors that occur during loading
-	godotenv.Load()
+	// Skip loading .env inside Docker containers to avoid overriding environment variables set by docker-compose
+	if _, isDocker := os.LookupEnv("DOCKER"); !isDocker {
+		godotenv.Load()
+	}
 	return Config{
 		PublicHost:             getEnv("PublicHost", "http://localhost"),
 		Port:                   getEnv("Port", "8080"),
