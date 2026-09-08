@@ -1,5 +1,7 @@
 # My Project — Local MySQL via Docker
 
+The project is developed with go , ec2 and AWS.
+
 Start a local MySQL server for development (no migrations will be applied):
 
 ```sh
