@@ -23,7 +23,7 @@ jobs:
         run: go test ./...
 
       - name: Build application
-        run: go build -o ecommerce
+        run: go build -o ecommerce ./cmd
 
       - name: Build Docker image
         run: docker build -t ecommerce-api .
