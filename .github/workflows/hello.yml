@@ -38,3 +38,6 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Tag Docker image
+        run: docker tag ecommerce-api ghcr.io/${{ github.repository_owner }}/ecommerce-api:latest
