@@ -24,3 +24,6 @@ jobs:
 
       - name: Build application
         run: go build -o ecommerce
+
+      - name: Build Docker image
+        run: docker build -t ecommerce-api .
